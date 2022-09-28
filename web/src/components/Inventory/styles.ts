@@ -56,8 +56,19 @@ export const SlotContainer = styled.div`
   border: 3px solid gray;
   background-color: rgba(255, 255, 255, 0.2);
   cursor: grab;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 `;
 
 export const SlotName = styled.div`
   color: white;
 `;
+
+export const SlotImage = styled.div((name) => ({
+  width: '100%',
+  height: '100%',
+  background: 'url(https://cdn-icons-png.flaticon.com/512/824/824239.png) no-repeat',
+  backgroundSize: '100% 100%',
+}));

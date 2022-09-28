@@ -5,6 +5,7 @@ import {
   PayloadActionGeneric,
   PayloadActionMoveItem,
 } from '@/types/inventory';
+import { canStackItems, canSwapItems } from '@/utils/inventoryUtils';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 const initialState: Inventories = {
@@ -48,26 +49,29 @@ export const inventorySlice = createSlice({
       }
     },
     moveItem: (state, action: PayloadAction<PayloadActionMoveItem>) => {
-      const fromInventory = state[action.payload.fromInventory];
-      const toInventory = state[action.payload.toInventory];
-      const fromSlot = fromInventory?.items[action.payload.fromSlot];
-      const toSlot = toInventory?.items[action.payload.toSlot];
-      const amount = action.payload.amount;
-      if (fromInventory !== toInventory) {
-        if (fromSlot) {
-          if (fromSlot.unique) {
-            return;
+      const { fromInventory, toInventory, fromSlot, toSlot, amount } = action.payload;
+      const fromItem = state[fromInventory].items[fromSlot];
+      const toItem = state[toInventory].items[toSlot];
+      if (fromItem && toItem) {
+        if (canStackItems(fromItem, toItem)) {
+          if (fromItem.amount > amount) {
+            fromItem.amount -= amount;
+            toItem.amount += amount;
+          } else {
+            delete state[fromInventory].items[fromSlot];
+            toItem.amount += fromItem.amount;
           }
-          if (toSlot === undefined) {
-            if (fromSlot.amount - amount > 0) {
-              fromSlot.amount -= amount;
-            } else {
-              delete fromInventory.items[fromSlot.slot];
-            }
-            fromSlot.slot = action.payload.toSlot;
-            toInventory.items[action.payload.toSlot] = fromSlot;
-          }
+        } else {
+          console.log('swapping items');
+          toItem.slot = fromSlot;
+          fromItem.slot = toSlot;
+          state[fromInventory].items[fromSlot] = toItem;
+          state[toInventory].items[toSlot] = fromItem;
         }
+      } else if (toItem === undefined) {
+        fromItem.slot = toSlot;
+        delete state[fromInventory].items[fromSlot];
+        state[toInventory].items[toSlot] = fromItem;
       }
     },
     setInventory: (state, action: PayloadAction<Inventories>) => {

@@ -2,10 +2,11 @@ import { RootState } from '@/store';
 import { Inventories, ItemInfo } from '@/types/inventory';
 import { type } from '@testing-library/user-event/dist/type';
 import { useEffect } from 'react';
-import { useDrag, useDrop } from 'react-dnd';
+import { useDrag, useDrop, DragPreviewImage, XYCoord, useDragLayer } from 'react-dnd';
 import { useDispatch, useSelector } from 'react-redux';
 import { moveItem } from './inventorySlice';
-import { SlotContainer, SlotName } from './styles';
+import { SlotContainer, SlotImage, SlotName } from './styles';
+import { getDragLayer } from '@/utils/inventoryUtils';
 
 type Props = {
   inventory: keyof Inventories;
@@ -25,7 +26,6 @@ export const Slot: React.FC<Props> = ({ inventory, slot }) => {
   const [collectedProps, drop] = useDrop(() => ({
     accept: 'item',
     drop(item: { inventory: keyof Inventories; slot: number }, monitor) {
-      console.log(item, inventory);
       if (item) {
         dispatch(
           moveItem({
@@ -39,13 +39,57 @@ export const Slot: React.FC<Props> = ({ inventory, slot }) => {
       }
     },
   }));
+
   if (item?.slot === slot) {
-    return (
-      <SlotContainer ref={drop}>
-        <SlotName ref={drag}>{item?.name}</SlotName>
-      </SlotContainer>
-    );
+    if (collected.isDragging) {
+      return (
+        <SlotContainer>
+          <CustomDragLayer />
+        </SlotContainer>
+      );
+    } else {
+      return (
+        <SlotContainer ref={drop}>
+          <SlotName>{item?.name}</SlotName>
+          <SlotImage ref={drag} />
+        </SlotContainer>
+      );
+    }
   } else {
     return <SlotContainer ref={drop} />;
   }
+};
+const CustomDragLayer = () => {
+  const { itemType, isDragging, item, initialOffset, currentOffset } = useDragLayer((monitor) => ({
+    item: monitor.getItem(),
+    itemType: monitor.getItemType(),
+    initialOffset: monitor.getInitialSourceClientOffset(),
+    currentOffset: monitor.getSourceClientOffset(),
+    isDragging: monitor.isDragging(),
+  }));
+
+  const renderItem = () => {
+    console.log('rendering item');
+    return (
+      <div
+        className="dragitem"
+        style={{
+          width: '100px',
+          height: '100px',
+        }}
+      >
+        <SlotImage />
+      </div>
+    );
+  };
+
+  if (!isDragging) {
+    return null;
+  }
+
+  return (
+    <div className="draglayer">
+      <div style={getDragLayer(initialOffset, currentOffset)}>{renderItem()}</div>
+    </div>
+  );
 };

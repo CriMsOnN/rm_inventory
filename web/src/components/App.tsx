@@ -3,10 +3,11 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import { debugData } from '@/utils/debugData';
-import { Inventories, ItemInfo } from '@/types/inventory';
+import { Inventories, ItemInfo, PayloadActionMoveItem } from '@/types/inventory';
 import { moveItem, setInventory } from './Inventory/inventorySlice';
 import { useInventoryMockData } from './Inventory/inventory.mock';
 import Inventory from './Inventory';
+import { registerDevCommands } from '@/utils/devCommands';
 
 const App = () => {
   const inventorySlice = useSelector((state: RootState) => state.inventory);
@@ -15,18 +16,14 @@ const App = () => {
     console.log('rerender');
     useInventoryMockData();
   }, []);
+
+  registerDevCommands();
   useNuiEvent('setInventory', (data: Inventories) => {
-    // set data to inventorySlice
     dispatch(setInventory(data));
-    dispatch(
-      moveItem({
-        fromInventory: 'leftInventory',
-        toInventory: 'rightInventory',
-        fromSlot: 1,
-        toSlot: 3,
-        amount: 1,
-      })
-    );
+  });
+  useNuiEvent('moveItem', (data: PayloadActionMoveItem) => {
+    console.log(data);
+    dispatch(moveItem(data));
   });
   return <Inventory />;
 };
