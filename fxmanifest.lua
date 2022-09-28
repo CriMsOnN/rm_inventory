@@ -2,9 +2,7 @@ fx_version 'cerulean'
 game 'rdr3'
 rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aware my resources *will* become incompatible once RedM ships.'
 
-description 'Status script for rmcore'
 
-name 'rm_status'
 version '0.0.1'
 license 'MIT'
 author 'Cr1MsOn'
@@ -16,11 +14,7 @@ dependencies {
 }
 
 shared_scripts {
-    '@rm_core/import.lua',
-    '@rm_core/dataview.lua',
-    '@ox_lib/init.lua',
-    '@ox_lib/natives.lua',
-    'config.lua',
+
 }
 
 client_scripts {
