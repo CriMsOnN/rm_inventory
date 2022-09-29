@@ -8,6 +8,7 @@ export type Inventory = {
   items: Item;
   maxSlots: number;
   maxWeight: number;
+  type: string;
 };
 
 export type Item = {

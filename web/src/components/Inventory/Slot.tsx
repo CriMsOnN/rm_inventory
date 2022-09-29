@@ -7,15 +7,20 @@ import { useDispatch, useSelector } from 'react-redux';
 import { moveItem } from './inventorySlice';
 import { SlotContainer, SlotImage, SlotName } from './styles';
 import { getDragLayer } from '@/utils/inventoryUtils';
+import { Box } from '@chakra-ui/react';
+import { useContextMenu } from '../../providers/ContextMenuProvider';
 
 type Props = {
   inventory: keyof Inventories;
   slot: number;
+  onContextMenu: (e: React.MouseEvent<HTMLDivElement, MouseEvent>, slot: number) => void;
+  isDragging: (dragging: boolean) => void;
 };
 
-export const Slot: React.FC<Props> = ({ inventory, slot }) => {
+export const Slot: React.FC<Props> = ({ inventory, slot, onContextMenu, isDragging }) => {
   const item = useSelector((state: RootState) => state.inventory[inventory].items[slot]);
   const dispatch = useDispatch();
+  const { setOpen } = useContextMenu();
   const [collected, drag, dragPreview] = useDrag(() => ({
     type: 'item',
     item: { inventory, slot },
@@ -40,6 +45,10 @@ export const Slot: React.FC<Props> = ({ inventory, slot }) => {
     },
   }));
 
+  useEffect(() => {
+    isDragging(collected.isDragging);
+  }, [collected.isDragging]);
+
   if (item?.slot === slot) {
     if (collected.isDragging) {
       return (
@@ -49,7 +58,7 @@ export const Slot: React.FC<Props> = ({ inventory, slot }) => {
       );
     } else {
       return (
-        <SlotContainer ref={drop}>
+        <SlotContainer ref={drop} onContextMenu={(e) => onContextMenu(e, slot)}>
           <SlotName>{item?.name}</SlotName>
           <SlotImage ref={drag} />
         </SlotContainer>
@@ -69,17 +78,16 @@ const CustomDragLayer = () => {
   }));
 
   const renderItem = () => {
-    console.log('rendering item');
     return (
-      <div
-        className="dragitem"
-        style={{
+      <Box
+        as="div"
+        sx={{
           width: '100px',
           height: '100px',
         }}
       >
         <SlotImage />
-      </div>
+      </Box>
     );
   };
 
@@ -88,8 +96,19 @@ const CustomDragLayer = () => {
   }
 
   return (
-    <div className="draglayer">
+    <Box
+      as="div"
+      sx={{
+        position: 'fixed',
+        pointerEvents: 'none',
+        zIndex: 100,
+        left: 0,
+        top: 0,
+        width: '100%',
+        height: '100%',
+      }}
+    >
       <div style={getDragLayer(initialOffset, currentOffset)}>{renderItem()}</div>
-    </div>
+    </Box>
   );
 };

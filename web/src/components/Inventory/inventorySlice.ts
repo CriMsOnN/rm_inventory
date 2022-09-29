@@ -11,12 +11,14 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 const initialState: Inventories = {
   leftInventory: {
     id: 'leftInventory',
+    type: 'inventory',
     items: {},
     maxSlots: 10,
     maxWeight: 100,
   },
   rightInventory: {
     id: 'rightInventory',
+    type: 'shop',
     items: {},
     maxSlots: 10,
     maxWeight: 100,
