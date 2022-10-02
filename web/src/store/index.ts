@@ -1,4 +1,4 @@
-import inventorySlice from '@/components/Inventory/inventorySlice';
+import inventorySlice from '@/components/Inventory/inventory.store';
 import { configureStore } from '@reduxjs/toolkit';
 
 export const store = configureStore({

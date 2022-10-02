@@ -1,8 +1,8 @@
 import { Item } from '@/types/inventory';
 import { debugData } from '@/utils/debugData';
 export const useInventoryMockData = () => {
-  const leftInventory = generateMockInventory(1, 10, 50);
-  const rightInventory = generateMockInventory(2, 5, 50);
+  const leftInventory = generateMockInventory(1, 1, 50);
+  const rightInventory = generateMockInventory(2, 1, 50);
 
   debugData(
     [
@@ -30,6 +30,7 @@ const generateMockInventory = (id: number, itemSlots: number, maxSlots: number) 
       description: 'This is a test item',
       unique: false,
       usable: false,
+      image: 'consumable_coffee',
     };
   }
   return {

@@ -9,6 +9,7 @@ export type Inventory = {
   maxSlots: number;
   maxWeight: number;
   type: string;
+  inventoryWeight: number;
 };
 
 export type Item = {
@@ -24,6 +25,7 @@ export type ItemInfo = {
   unique: boolean;
   usable: boolean;
   weight: number;
+  image: string;
 };
 
 export type ItemMetadata = {

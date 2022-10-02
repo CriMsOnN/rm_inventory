@@ -9,6 +9,14 @@ export const canStackItems = (fromItem: ItemInfo, toItem: ItemInfo) => {
 export const canSwapItems = (fromItem: ItemInfo, toItem: ItemInfo) =>
   !fromItem.unique || !toItem.unique;
 
+export const calculateWeight = (items: { [key: string]: ItemInfo }) => {
+  let weight = 0;
+  Object.values(items).forEach((item) => {
+    weight += item.weight * item.amount;
+  });
+  return weight;
+};
+
 export const getDragLayer = (initialOffset: XYCoord | null, currentOffset: XYCoord | null) => {
   if (!initialOffset || !currentOffset) {
     return {

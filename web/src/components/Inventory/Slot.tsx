@@ -4,30 +4,24 @@ import { type } from '@testing-library/user-event/dist/type';
 import { useEffect } from 'react';
 import { useDrag, useDrop, DragPreviewImage, XYCoord, useDragLayer } from 'react-dnd';
 import { useDispatch, useSelector } from 'react-redux';
-import { moveItem } from './inventorySlice';
-import { SlotContainer, SlotImage, SlotName } from './styles';
+import { moveItem } from './inventory.store';
+import { SlotAmount, SlotContainer, SlotImage, SlotName, SlotWeight } from './styles';
 import { getDragLayer } from '@/utils/inventoryUtils';
 import { Box } from '@chakra-ui/react';
 import { useContextMenu } from '../../providers/ContextMenuProvider';
+import styled from 'styled-components';
 
 type Props = {
   inventory: keyof Inventories;
   slot: number;
+  item: ItemInfo;
   onContextMenu: (e: React.MouseEvent<HTMLDivElement, MouseEvent>, slot: number) => void;
   isDragging: (dragging: boolean) => void;
 };
 
-export const Slot: React.FC<Props> = ({ inventory, slot, onContextMenu, isDragging }) => {
-  const item = useSelector((state: RootState) => state.inventory[inventory].items[slot]);
+export const Slot: React.FC<Props> = ({ inventory, slot, item, onContextMenu, isDragging }) => {
   const dispatch = useDispatch();
   const { setOpen } = useContextMenu();
-  const [collected, drag, dragPreview] = useDrag(() => ({
-    type: 'item',
-    item: { inventory, slot },
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-  }));
   const [collectedProps, drop] = useDrop(() => ({
     accept: 'item',
     drop(item: { inventory: keyof Inventories; slot: number }, monitor) {
@@ -44,23 +38,57 @@ export const Slot: React.FC<Props> = ({ inventory, slot, onContextMenu, isDraggi
       }
     },
   }));
+  const [collected, drag, dragPreview] = useDrag(() => ({
+    type: 'item',
+    item: {
+      inventory,
+      slot,
+    },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
 
   useEffect(() => {
     isDragging(collected.isDragging);
   }, [collected.isDragging]);
 
-  if (item?.slot === slot) {
+  if (item && item?.slot === slot) {
     if (collected.isDragging) {
       return (
         <SlotContainer>
-          <CustomDragLayer />
+          <CustomDragLayer image={item.image} />
         </SlotContainer>
       );
     } else {
       return (
-        <SlotContainer ref={drop} onContextMenu={(e) => onContextMenu(e, slot)}>
+        <SlotContainer onContextMenu={(e) => onContextMenu(e, slot)}>
+          <Box
+            sx={{
+              width: '100%',
+              justifyContent:
+                slot <= 5 && inventory === 'leftInventory' ? 'space-between' : 'flex-end',
+              display: 'flex',
+            }}
+          >
+            {slot <= 5 && inventory === 'leftInventory' && (
+              <Box
+                sx={{
+                  marginLeft: '5%',
+                  color: 'white',
+                  fontSize: '20px',
+                  filter: 'drop-shadow(0 0 2px #000)',
+                }}
+              >
+                {slot}
+              </Box>
+            )}
+            <SlotAmount>
+              {item?.amount}({(item?.amount * item?.weight).toFixed(1)})
+            </SlotAmount>
+          </Box>
+          <SlotImage ref={drag} src={item.image} />
           <SlotName>{item?.name}</SlotName>
-          <SlotImage ref={drag} />
         </SlotContainer>
       );
     }
@@ -68,7 +96,8 @@ export const Slot: React.FC<Props> = ({ inventory, slot, onContextMenu, isDraggi
     return <SlotContainer ref={drop} />;
   }
 };
-const CustomDragLayer = () => {
+
+const CustomDragLayer = ({ image }: { image: string }) => {
   const { itemType, isDragging, item, initialOffset, currentOffset } = useDragLayer((monitor) => ({
     item: monitor.getItem(),
     itemType: monitor.getItemType(),
@@ -86,7 +115,7 @@ const CustomDragLayer = () => {
           height: '100px',
         }}
       >
-        <SlotImage />
+        <SlotImage src={image} />
       </Box>
     );
   };
